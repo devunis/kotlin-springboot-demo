@@ -3,6 +3,7 @@ package com.heythere.adminserverdemo
 import org.springframework.data.repository.CrudRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Repository
+import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
@@ -22,13 +23,20 @@ data class User(
 )
 
 @RestController
-class UserController (val userRepository: UserRepository){
+class UserController (private val userService: UserService){
     @GetMapping
-    fun getAllUser(): ResponseEntity<*> = ResponseEntity.ok(userRepository.findAll())
+    fun getAllUser() = ResponseEntity.ok(userService.getAllUser())
 
     @PostMapping
-    fun registerUser(): ResponseEntity<*> = ResponseEntity.ok(userRepository.save(User(username = "test", password = "test")))
+    fun registerUser() = ResponseEntity.ok(userService.save(User(username = "test", password = "test")))
 
+}
+
+@Service
+class UserService(private val userRepository: UserRepository) {
+    fun getAllUser() = userRepository.findAll()
+
+    fun save(user: User) = userRepository.save(user)
 }
 
 @Repository
