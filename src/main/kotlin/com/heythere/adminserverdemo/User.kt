@@ -12,19 +12,23 @@ import javax.persistence.*
 data class UserResponseDto(
         val username: String,
         val posts: List<PostResponseDto> = ArrayList()
-)
+){
+    companion object{
+        fun toMapper(user: User) = UserResponseDto(user.username, user.posts.map {
+            post -> PostResponseDto.toMapper(post) })
+    }
+}
 
 @Entity
 data class User(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        val id: Long? = null,
+        val id: Long = 1,
         val username: String,
         val password: String,
         @OneToMany(mappedBy = "author")
         val posts: List<Post> = ArrayList()
-
-)
+) : BaseTimeEntity()
 
 @RestController
 class UserController (private val userService: UserService){
@@ -38,10 +42,9 @@ class UserController (private val userService: UserService){
 
 @Service
 class UserService(private val userRepository: UserRepository) {
-    fun getAllUser() = userRepository.findAll().map { user -> UserResponseDto(
-            username = user.username,
-            posts = user.posts.map { post -> PostResponseDto(post.title,post.content,post.author.username) })  }
-
+    fun getAllUser() = userRepository.findAll().map {
+        user ->  UserResponseDto.toMapper(user)
+    }
     fun getUser(id:Long) = userRepository.findById(id).get()
 
     fun save(user: User) = userRepository.save(user).username
